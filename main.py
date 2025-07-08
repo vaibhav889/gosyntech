@@ -56,23 +56,32 @@ class ServerControlView(discord.ui.View):
 @tree.command(name="panel", description="Show server status panel")
 async def panel(interaction: discord.Interaction):
     await interaction.response.defer()
+
     r1 = requests.get(gosyntech_api("show_server_info"))
     r2 = requests.get(gosyntech_api("fetch_server_usage"))
 
     if r1.status_code != 200 or r2.status_code != 200:
         return await interaction.followup.send("❌ Failed to fetch server data.")
 
-    info = r1.json()
-    usage = r2.json()
+    usage = r2.json().get("server_usage", {})
 
-    embed = discord.Embed(title=f"📊 Server Panel - {SERVER_NAME}", color=discord.Color.blue())
-    embed.add_field(name="Status", value=info.get("status", "N/A"), inline=True)
-    embed.add_field(name="Uptime", value=usage.get("uptime", "N/A"), inline=True)
-    embed.add_field(name="IP", value="McDelta.2tps.pro:10789", inline=False)
-    embed.add_field(name="RAM", value=f"{usage.get('ram_used', 'N/A')} / {usage.get('ram_total', 'N/A')} MB", inline=True)
-    embed.add_field(name="CPU", value=f"{usage.get('cpu_used', 'N/A')} / {usage.get('cpu_total', 'N/A')} %", inline=True)
-    embed.add_field(name="Disk", value=f"{usage.get('disk_used', 'N/A')} / {usage.get('disk_total', 'N/A')} MB", inline=True)
+    status = usage.get("server_status", "unknown")
+    uptime = usage.get("uptime", "N/A")
+    ram = usage.get("ram_usage", "N/A")
+    cpu = usage.get("cpu_usage", "N/A")
+    disk = usage.get("disk_usage", "N/A")
+    ip = "McDelta.2tps.pro:10789"
+
+    embed = discord.Embed(title=f"📊 Server Panel - {SERVER_NAME}", color=discord.Color.blurple())
+    embed.add_field(name="Status", value=status, inline=True)
+    embed.add_field(name="Uptime", value=uptime, inline=True)
+    embed.add_field(name="IP", value=ip, inline=False)
+    embed.add_field(name="RAM", value=ram, inline=True)
+    embed.add_field(name="CPU", value=cpu, inline=True)
+    embed.add_field(name="Disk", value=disk, inline=True)
+
     await interaction.followup.send(embed=embed, view=ServerControlView(interaction.user.id))
+
 
 # Existing commands stay the same...
 
