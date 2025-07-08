@@ -72,7 +72,8 @@ async def panel(interaction: discord.Interaction):
     disk = usage.get("disk_usage", "N/A")
     ip = "McDelta.2tps.pro:10789"
 
-    embed = discord.Embed(title=f"📊 Server Panel - {SERVER_NAME}", color=discord.Color.blurple())
+    color = discord.Color.green() if status.lower() == "online" else discord.Color.red()
+    embed = discord.Embed(title=f"📊 Server Panel - {SERVER_NAME}", color=color)
     embed.add_field(name="Status", value=status, inline=True)
     embed.add_field(name="Uptime", value=uptime, inline=True)
     embed.add_field(name="IP", value=ip, inline=False)
