@@ -37,7 +37,7 @@ class ServerControlView(discord.ui.View):
     @discord.ui.button(label="Start", style=discord.ButtonStyle.success)
     async def start_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         r = requests.get(gosyntech_api("start_server"))
-        await interaction.response.send_message("✅ Server starting..." if r.status_code == 200 else "❌ Failed to start server.", ephemeral=True)
+        await interaction.response.send_message("🚀 Server is starting!" if r.status_code == 200 else "❌ Failed to start server.", ephemeral=True)
 
     @discord.ui.button(label="Stop", style=discord.ButtonStyle.danger)
     async def stop_button(self, interaction: discord.Interaction, button: discord.ui.Button):
