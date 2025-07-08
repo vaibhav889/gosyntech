@@ -68,7 +68,7 @@ async def panel(interaction: discord.Interaction):
     embed = discord.Embed(title=f"📊 Server Panel - {SERVER_NAME}", color=discord.Color.blue())
     embed.add_field(name="Status", value=info.get("status", "N/A"), inline=True)
     embed.add_field(name="Uptime", value=usage.get("uptime", "N/A"), inline=True)
-    embed.add_field(name="IP", value="paid-1.guardxhosting.in:45501", inline=False)
+    embed.add_field(name="IP", value="McDelta.2tps.pro:10789", inline=False)
     embed.add_field(name="RAM", value=f"{usage.get('ram_used', 'N/A')} / {usage.get('ram_total', 'N/A')} MB", inline=True)
     embed.add_field(name="CPU", value=f"{usage.get('cpu_used', 'N/A')} / {usage.get('cpu_total', 'N/A')} %", inline=True)
     embed.add_field(name="Disk", value=f"{usage.get('disk_used', 'N/A')} / {usage.get('disk_total', 'N/A')} MB", inline=True)
@@ -115,7 +115,7 @@ async def status(interaction: discord.Interaction):
 
 @tree.command(name="ip", description="Get the Minecraft server IP")
 async def ip(interaction: discord.Interaction):
-    await interaction.response.send_message("📡 Server IP: `paid-1.guardxhosting.in:45501`")
+    await interaction.response.send_message("📡 Server IP: `McDelta.2tps.pro:10789`")
 
 @tree.command(name="uptime", description="Get server uptime")
 async def uptime(interaction: discord.Interaction):
