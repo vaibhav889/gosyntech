@@ -9,6 +9,7 @@ from discord.app_commands import Choice
 import requests
 import random
 import re
+from langdetect import detect
 import os
 import time
 
@@ -662,24 +663,19 @@ RESPONSE_MAP = {
 
 SUPPORTED_LANGS = RESPONSE_MAP.keys()
 
-def detect_language(text):
+def get_language(text: str) -> str:
     try:
-        # If text contains Devanagari (Hindi script), force Hindi
-        if re.search(r'[\u0900-\u097F]', text):
-            return 'hi'
-        # Basic Konkani trigger words or phrases
-        if any(word in text.lower() for word in ['re', 'mhun', 'ghera', 'zalo', 'zaina', 'ghetli']):
-            return 'kok'
-        # Hinglish heuristics: mix of English + Indian words
-        if any(word in text.lower() for word in ['tu', 'hai', 'kya', 'bhai', 'mat', 'nahi']):
-            return 'hin'
-        # Fallback to langdetect
         lang = detect(text)
-        if lang in RESPONSE_MAP:
-            return lang
-        return 'en'
+        if lang == 'hi':
+            return 'hin'
+        elif lang == 'en':
+            return 'en'
+        elif lang == 'kok':
+            return 'kok'
+        else:
+            return 'en'  # default fallback
     except:
-        return 'en'
+        return 'en'  # fallback in case of errors
 
 def generate_response(lang):
     responses = RESPONSE_MAP.get(lang, RESPONSE_MAP['en'])
@@ -861,7 +857,7 @@ async def on_message(message):
     bot_mentioned = client.user.mention in message.content
 
     if str(channel.name) == MINECRAFT_CHANNEL_NAME or bot_mentioned:
-        lang = detect_language(message.content)
+        lang = get_language(message.content)
         roast = generate_response(lang)
         await message.reply(roast)
         
