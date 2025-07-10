@@ -664,25 +664,31 @@ RESPONSE_MAP = {
 SUPPORTED_LANGS = RESPONSE_MAP.keys()
 
 def get_language(text: str) -> str:
+    text = text.lower()
+
+    # Detect Konkani via common keywords
+    if any(word in text for word in ['mhun', 'zata', 're', 'korunk', 'tuzo', 'fankta', 'ghera']):
+        print("[LANG DETECTED] kok")
+        return 'kok'
+
+    # Detect Hinglish via Hindi words in Latin script
+    if any(word in text for word in ['tu', 'tera', 'nahi', 'kya', 'kaise', 'bhai', 'mat', 'kyun', 'bana', 'mar']):
+        print("[LANG DETECTED] hin")
+        return 'hin'
+
+    # Detect Hindi Devanagari script
+    if re.search(r'[\u0900-\u097F]', text):
+        print("[LANG DETECTED] hin (Devanagari)")
+        return 'hin'
+
     try:
-        # Check for Konkani clues
-        if any(word in text.lower() for word in ['re', 'mhun', 'zata', 'tujo', 'tuzo', 'fankta', 'zaina']):
-            return 'kok'
-
-        # Check for Hinglish by looking for mix of Hindi keywords + English script
-        if re.search(r'\b(tu|tera|nahi|bhai|mat|kyun|hai|kya|kaise|chala|mar)\b', text.lower()):
-            return 'hin'
-
-        # Detect Hindi if script is Devanagari
-        if re.search(r'[\u0900-\u097F]', text):
-            return 'hin'  # Treat Hindi script as Hinglish category
-
-        # Try langdetect as fallback
         lang = detect(text)
-        if lang in ['kok', 'hin', 'en']:
+        print(f"[LANG DETECTED BY langdetect] {lang}")
+        if lang in ['kok', 'hin']:
             return lang
         return 'en'
     except:
+        print("[LANG DETECTED FALLBACK] en")
         return 'en'
         
 def generate_response(lang):
