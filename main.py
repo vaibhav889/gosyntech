@@ -8,7 +8,7 @@ from discord import app_commands
 from discord.app_commands import Choice
 import requests
 import random
-from langdetect import detect
+import re
 import os
 import time
 
@@ -18,7 +18,7 @@ GOSYNTECH_USER = os.getenv("GOSYNTECH_USER")
 AUTH_TOKEN = os.getenv("AUTH_TOKEN")
 SERVER_NAME = os.getenv("SERVER_NAME")
 ADMIN_IDS = [int(uid) for uid in os.getenv("ADMIN_IDS", "").split(",") if uid]
-MINECRAFT_CHANNEL_NAME = 'the-delta-chat'
+MINECRAFT_CHANNEL_NAME = '🔥get-roasted'
 
 BASE_URL = "https://gosyntech.in/api/v1/index.php"
 
@@ -236,15 +236,20 @@ SUPPORTED_LANGS = RESPONSE_MAP.keys()
 
 def detect_language(text):
     try:
-        lang = detect(text)
-        if lang in SUPPORTED_LANGS:
-            return lang
-        elif lang == 'hi':
+        # If text contains Devanagari (Hindi script), force Hindi
+        if re.search(r'[\u0900-\u097F]', text):
             return 'hi'
-        elif lang == 'en':
-            return 'en'
-        else:
-            return 'en'
+        # Basic Konkani trigger words or phrases
+        if any(word in text.lower() for word in ['re', 'mhun', 'ghera', 'zalo', 'zaina', 'ghetli']):
+            return 'kok'
+        # Hinglish heuristics: mix of English + Indian words
+        if any(word in text.lower() for word in ['tu', 'hai', 'kya', 'bhai', 'mat', 'nahi']):
+            return 'hin'
+        # Fallback to langdetect
+        lang = detect(text)
+        if lang in RESPONSE_MAP:
+            return lang
+        return 'en'
     except:
         return 'en'
 
