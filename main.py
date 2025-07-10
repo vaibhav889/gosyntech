@@ -665,18 +665,26 @@ SUPPORTED_LANGS = RESPONSE_MAP.keys()
 
 def get_language(text: str) -> str:
     try:
-        lang = detect(text)
-        if lang == 'hi':
-            return 'hin'
-        elif lang == 'en':
-            return 'en'
-        elif lang == 'kok':
+        # Check for Konkani clues
+        if any(word in text.lower() for word in ['re', 'mhun', 'zata', 'tujo', 'tuzo', 'fankta', 'zaina']):
             return 'kok'
-        else:
-            return 'en'  # default fallback
-    except:
-        return 'en'  # fallback in case of errors
 
+        # Check for Hinglish by looking for mix of Hindi keywords + English script
+        if re.search(r'\b(tu|tera|nahi|bhai|mat|kyun|hai|kya|kaise|chala|mar)\b', text.lower()):
+            return 'hin'
+
+        # Detect Hindi if script is Devanagari
+        if re.search(r'[\u0900-\u097F]', text):
+            return 'hin'  # Treat Hindi script as Hinglish category
+
+        # Try langdetect as fallback
+        lang = detect(text)
+        if lang in ['kok', 'hin', 'en']:
+            return lang
+        return 'en'
+    except:
+        return 'en'
+        
 def generate_response(lang):
     responses = RESPONSE_MAP.get(lang, RESPONSE_MAP['en'])
     return random.choice(responses)
