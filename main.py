@@ -52,21 +52,27 @@ class ServerControlView(discord.ui.View):
     @discord.ui.button(label="Start", style=discord.ButtonStyle.success)
     async def start_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         res = await safe_api_call("start_server")
-        await interaction.response.send_message("🚀 Server starting..." if res["success"] else f"⚠️ {res['message']}", ephemeral=True)
+        success = res.get("success", False)
+        msg = res.get("message", "⚠️ Unexpected error")
+        await interaction.response.send_message("🚀 Server starting..." if success else f"⚠️ {msg}", ephemeral=True)
 
     @discord.ui.button(label="Stop", style=discord.ButtonStyle.danger)
     async def stop_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not is_admin(interaction.user.id):
             return await interaction.response.send_message("❌ Not authorized.", ephemeral=True)
         res = await safe_api_call("stop_server")
-        await interaction.response.send_message("🛑 Server stopping..." if res["success"] else f"⚠️ {res['message']}", ephemeral=True)
+        success = res.get("success", False)
+        msg = res.get("message", "⚠️ Unexpected error")
+        await interaction.response.send_message("🛑 Server stopping..." if success else f"⚠️ {msg}", ephemeral=True)
 
     @discord.ui.button(label="Restart", style=discord.ButtonStyle.primary)
     async def restart_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not is_admin(interaction.user.id):
             return await interaction.response.send_message("❌ Not authorized.", ephemeral=True)
         res = await safe_api_call("restart_server")
-        await interaction.response.send_message("🔁 Restarting..." if res["success"] else f"⚠️ {res['message']}", ephemeral=True)
+        success = res.get("success", False)
+        msg = res.get("message", "⚠️ Unexpected error")
+        await interaction.response.send_message("🔁 Restarting..." if success else f"⚠️ {msg}", ephemeral=True)
 
 @tree.command(name="panel", description="Show server status panel")
 async def panel(interaction: discord.Interaction):
@@ -74,7 +80,7 @@ async def panel(interaction: discord.Interaction):
     info = await safe_api_call("show_server_info")
     usage = await safe_api_call("fetch_server_usage")
 
-    if not info["success"] or not usage["success"]:
+    if not info.get("success") or not usage.get("success"):
         return await interaction.followup.send("❌ Could not fetch server data. Try again later.")
 
     try:
@@ -103,7 +109,9 @@ async def panel(interaction: discord.Interaction):
 async def start(interaction: discord.Interaction):
     await interaction.response.defer()
     res = await safe_api_call("start_server")
-    await interaction.followup.send("🚀 Server is starting!" if res["success"] else f"⚠️ {res['message']}")
+    success = res.get("success", False)
+    msg = res.get("message", "⚠️ Unexpected error")
+    await interaction.followup.send("🚀 Server is starting!" if success else f"⚠️ {msg}")
 
 @tree.command(name="stop", description="Stop the Minecraft server (admin only)")
 async def stop(interaction: discord.Interaction):
@@ -111,7 +119,9 @@ async def stop(interaction: discord.Interaction):
     if not is_admin(interaction.user.id):
         return await interaction.followup.send("❌ You’re not allowed to use this.")
     res = await safe_api_call("stop_server")
-    await interaction.followup.send("🛑 Server stopping..." if res["success"] else f"⚠️ {res['message']}")
+    success = res.get("success", False)
+    msg = res.get("message", "⚠️ Unexpected error")
+    await interaction.followup.send("🛑 Server stopping..." if success else f"⚠️ {msg}")
 
 @tree.command(name="restart", description="Restart the Minecraft server (admin only)")
 async def restart(interaction: discord.Interaction):
@@ -119,14 +129,16 @@ async def restart(interaction: discord.Interaction):
     if not is_admin(interaction.user.id):
         return await interaction.followup.send("❌ You’re not allowed to use this.")
     res = await safe_api_call("restart_server")
-    await interaction.followup.send("🔁 Restarting..." if res["success"] else f"⚠️ {res['message']}")
+    success = res.get("success", False)
+    msg = res.get("message", "⚠️ Unexpected error")
+    await interaction.followup.send("🔁 Restarting..." if success else f"⚠️ {msg}")
 
 @tree.command(name="status", description="Get server status")
 async def status(interaction: discord.Interaction):
     await interaction.response.defer()
     res = await safe_api_call("show_server_info")
-    if not res["success"]:
-        return await interaction.followup.send(f"❌ Could not fetch status: {res['message']}")
+    if not res.get("success"):
+        return await interaction.followup.send(f"❌ Could not fetch status: {res.get('message', 'unknown error')}")
     state = res.get("status", "unknown")
     await interaction.followup.send(f"📊 Server status: **{state.upper()}**")
 
@@ -138,8 +150,8 @@ async def ip(interaction: discord.Interaction):
 async def uptime(interaction: discord.Interaction):
     await interaction.response.defer()
     res = await safe_api_call("fetch_server_usage")
-    if not res["success"]:
-        return await interaction.followup.send(f"❌ Failed to fetch uptime: {res['message']}")
+    if not res.get("success"):
+        return await interaction.followup.send(f"❌ Failed to fetch uptime: {res.get('message', 'unknown')}")
     uptime = res.get("uptime", "N/A") or res.get("server_usage", {}).get("uptime", "N/A")
     await interaction.followup.send(f"🕒 Uptime: {uptime}")
 
@@ -164,7 +176,9 @@ async def cmd(interaction: discord.Interaction, command: str):
         return await interaction.followup.send("❌ You are not authorized.")
     encoded_command = command.replace(" ", "%20")
     res = await safe_api_call("send_command", f"&command={encoded_command}")
-    await interaction.followup.send(f"✅ Sent command: `{command}`" if res["success"] else f"❌ Failed: {res['message']}")
+    success = res.get("success", False)
+    msg = res.get("message", "❌ Unexpected error")
+    await interaction.followup.send(f"✅ Sent command: `{command}`" if success else f"❌ Failed: {msg}")
 
 @tree.command(name="backup", description="Backup server (admin only)")
 @app_commands.describe(action="Action to perform")
@@ -182,7 +196,9 @@ async def backup(interaction: discord.Interaction, action: Choice[str]):
     }
     action_name, success_msg = action_map[action.value]
     res = await safe_api_call(action_name)
-    await interaction.followup.send(success_msg if res["success"] else f"❌ Failed: {res['message']}")
+    success = res.get("success", False)
+    msg = res.get("message", "❌ Unexpected error")
+    await interaction.followup.send(success_msg if success else f"❌ Failed: {msg}")
 
 @client.event
 async def on_ready():
